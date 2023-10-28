@@ -180,7 +180,7 @@ def analyze_contract(contract_file_path):
 
 
 st.session_state["no_api_call"] = no_api_call
-st.write(st.session_state)
+# st.write(st.session_state)
 def ui_api_key():
         # Initialize session state
         # if 'name' not in st.session_state:
