@@ -284,7 +284,7 @@ if st.session_state["authentication_status"]:
 	if uploaded_file:
               st.success("File Upload Successful")
 
-              with open('./'+ uploaded_file.name, 'r', encoding = 'utf-8') as f:
+              with open(os.path.abspath(uploaded_file.name), 'r', encoding = 'utf-8') as f:
                       content = f.read()
                       st.code(content)
               button1 = st.button("Analyze and Visualize" )
@@ -293,15 +293,15 @@ if st.session_state["authentication_status"]:
               if button1:
                       with st.spinner(text="In progress..."):
                              if uploaded_file.name.endswith(".py"):
-                                    ast_dict = generate_ast_python(uploaded_file.name)
+                                    ast_dict = generate_ast_python(os.path.abspath(uploaded_file.name))
                                     ast_dict = ast_to_dict(ast_dict)
                                     print_ast(ast_dict)
                                 #     st.write(ast_dict)
-                                    gen_dot_file(ast_dict, "py-tree-graph.dot")
+                                    gen_dot_file(ast_dict, os.path.abspath("py-tree-graph.dot"))
                              else:
-                                analyze_contract('./'+uploaded_file.name)
+                                analyze_contract(os.path.abspath(uploaded_file.name))
                                 ast_dict = gen_ast_solidity(uploaded_file.name)
-                                gen_dot_file(ast_dict, "./ast-tree-graph.dot")
+                                gen_dot_file(ast_dict, os.path.abspath("ast-tree-graph.dot"))
                         #      st.write(ast_dict)
                 #       dot = gen_dot_file(ast_dict)
                 #       g = ' \'\'\' ' + dot + ' \'\'\''
@@ -310,7 +310,7 @@ if st.session_state["authentication_status"]:
               if uploaded_file.name.endswith(".py"):
                      all_files = ["py-tree-graph.dot", "py_ast.json"]
               else:
-                all_files = glob.glob("*.dot") + glob.glob("*.json")
+                all_files = glob.glob(os.path.abspath("*.dot")) + glob.glob(os.path.abspath("*.json"))
                 
               selected_dot_file = st.selectbox("Select a .dot file", all_files, placeholder="Select a .dot file loaded",)
               with open(selected_dot_file, "r") as dot_file:
