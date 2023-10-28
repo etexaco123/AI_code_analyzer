@@ -8,7 +8,7 @@ from streamlit_option_menu import option_menu
 
 import os
 from dotenv import load_dotenv, dotenv_values
-
+import io
 import yaml
 from yaml.loader import SafeLoader
 
@@ -258,6 +258,7 @@ if choice == "SignUp":
                 except Exception as e:
                         st.error(e)
 
+# abspath = 
 
 # here is to show restricted content to authentic users
 if st.session_state["authentication_status"]:
@@ -277,16 +278,13 @@ if st.session_state["authentication_status"]:
 
 
 	uploaded_file = st.file_uploader("Upload a Solidity or Python file", type=["sol", "py"])
-        
-       
 
 	# Error handling
-	if uploaded_file:
+	if uploaded_file is not None:
               st.success("File Upload Successful")
 
-              with open(os.path.abspath(uploaded_file.name), 'r', encoding = 'utf-8') as f:
-                      content = f.read()
-                      st.code(content)
+              content = uploaded_file.read().decode('utf-8')
+              st.code(content)
               button1 = st.button("Analyze and Visualize" )
               button2 = st.button("Interprete")
 
