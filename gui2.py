@@ -284,7 +284,7 @@ if st.session_state["authentication_status"]:
 	if uploaded_file:
               st.success("File Upload Successful")
 
-              with open(uploaded_file.name, 'r', encoding = 'utf-8') as f:
+              with open('./'+ uploaded_file.name, 'r', encoding = 'utf-8') as f:
                       content = f.read()
                       st.code(content)
               button1 = st.button("Analyze and Visualize" )
@@ -299,9 +299,9 @@ if st.session_state["authentication_status"]:
                                 #     st.write(ast_dict)
                                     gen_dot_file(ast_dict, "py-tree-graph.dot")
                              else:
-                                analyze_contract(uploaded_file.name)
+                                analyze_contract('./'+uploaded_file.name)
                                 ast_dict = gen_ast_solidity(uploaded_file.name)
-                                gen_dot_file(ast_dict, "ast-tree-graph.dot")
+                                gen_dot_file(ast_dict, "./ast-tree-graph.dot")
                         #      st.write(ast_dict)
                 #       dot = gen_dot_file(ast_dict)
                 #       g = ' \'\'\' ' + dot + ' \'\'\''
