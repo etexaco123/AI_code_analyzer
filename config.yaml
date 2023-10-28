@@ -1,0 +1,25 @@
+cookie:
+  expiry_days: 30
+  key: some_signature_key
+  name: some_cookie_name
+credentials:
+  usernames:
+    etexaco123:
+      email: rotty@gmail.com
+      name: Ethel Uzo
+      password: $2b$12$v/v4xDIV32kwXiV4Pnvid.aMYDxAivNHh23PkD3YmlM5GhDp6Pv..
+    jsmith:
+      email: jsmith@gmail.com
+      name: John Smith
+      password: null
+    matt123:
+      email: matt@gmail.com
+      name: Matt Smith
+      password: $2b$12$PufimJD/7H4eyQ/pvIb.e.3FTcG5g6qS/odQHPf.7ZWIux6WBzqaS
+    rbriggs:
+      email: rbriggs@gmail.com
+      name: Rebecca Briggs
+      password: null
+preauthorized:
+  emails:
+  - melsby@gmail.com
