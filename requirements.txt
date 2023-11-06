@@ -1,5 +1,5 @@
 slither-analyzer==0.9.6
-solc-select==1.0.4
+solc-select==0.8.0
 solidity-parser==0.1.1
 streamlit==1.27.2
 streamlit-authenticator==0.2.3
