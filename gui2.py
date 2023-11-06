@@ -13,6 +13,7 @@ import yaml
 from yaml.loader import SafeLoader
 
 import requests
+from tempfile import NamedTemporaryFile
 
 from slither import Slither
 import ast
@@ -303,6 +304,12 @@ if st.session_state["authentication_status"]:
 
 	# Upload & Error handling
 	if uploaded_file is not None:
+              f = NamedTemporaryFile(suffix=".sol", delete=False) # Create temporary file
+              f.write(uploaded_file.getvalue())
+              f.close()
+        #       with open(f.name, 'r') as temp_file:
+        #                 contents = temp_file.read()
+        #       st.code(contents)
               st.success("File Upload Successful")
 
               content = uploaded_file.read().decode('utf-8')
@@ -326,9 +333,9 @@ if st.session_state["authentication_status"]:
                                     # Render the Digraph as a PNG file
                                     dot.format = 'png'
                              else:
-                                analyzed_files = analyze_contract(os.path.abspath(uploaded_file.name))
+                                analyzed_files = analyze_contract(f.name)
                                 # analyze_contract(os.path.abspath(uploaded_file.name))
-                                ast_dict = gen_ast_solidity(uploaded_file.name) # from here
+                                ast_dict = gen_ast_solidity(f.name) # from here
                                 ast_graph = gen_dot_file(ast_dict)
                                 # ast_str = json.dumps(ast_dict)
                                 analyzed_files.update({"AST": ast_dict, "AST-Graph":ast_graph})
