@@ -17,6 +17,7 @@ import requests
 from slither import Slither
 import ast
 import graphviz
+from graphviz import Digraph
 import openai
 import subprocess
 from PIL import Image
@@ -26,9 +27,11 @@ import glob
 import sys
 import pprint
 from solidity_parser import parser
-from visualize import gen_ast_solidity , get_edges , gen_dot_file, generate_ast_python, ast_to_dict, print_ast
+from visualize import gen_ast_solidity , get_edges , gen_dot_file, generate_ast_python, ast_to_dict
 
 load_dotenv()
+
+# initialize openAPI access
 # openai.api_key = os.getenv('OPEN_API_KEY')
 openai.api_key = os.getenv('USER_OPEN_API_KEY')
 solcx.install_solc('0.8.0')
@@ -96,31 +99,15 @@ def ui_info():
 	st.markdown('Source code can be found [here](https://github.com/etexaco123/codeanalyzer).')
     
 	# ----------to generate AST from python code ---------------------
-def generate_ast_python(code):
-    return ast.parse(code)
 
 
 # # ------------------------------to generate AST from solidity code --------------------------
 
-
-#         # Get edges from the AST dictionary
-# edges = get_edges(dict(sourceUnit)) 
-# # Visualize the AST using Graphviz DOT format in Streamlit
-# dot_format = "digraph G {\n"
-# for edge in edges:
-#         dot_format += f'  "{edge[0]}" -> "{edge[1]}" \n'
-#         dot_format += "}"
-
 # # -------------------------------visualize AST with graphviz----------------------------------
-# def visualize_ast(ast_tree):
-#     dot_data = ast.dump(ast_tree, annotate_fields=True, include_attributes=True)
-#     graph = graphviz.Source(dot_data)
-#     graph.render(filename="ast_tree", format="png", cleanup=True)
-
 # #----------putting it together -----------
 MAX_API_CALLS = 4
 no_api_call = 3
-# @st.cache_data(ttl=3600)                                 #to enable catching for the API calls
+@st.cache_data                                 #to enable catching for the API calls
 def interpret_code_with_llm(code):
     if st.session_state.user_api_key is None and st.session_state.no_api_call >= MAX_API_CALLS:
            st.warning("Please enter your API key in the Tab above")
@@ -128,7 +115,7 @@ def interpret_code_with_llm(code):
     else:
         response = openai.Completion.create(
                 engine="text-davinci-003",
-                prompt=f"Interpret the following code and describe its functionality.\
+                prompt=f"Interpret the following code and describe in details its functionality.\
                 Also itemize the vulnerabilities in the contract \ highlight the vulnerabilities itemized in red, yellow and green respectively which maps to high, medium and low risk vulnerabilities :\n\n```{code}```\n\n:  ",
                 max_tokens=2000,
                 temperature = 0.0
@@ -150,32 +137,36 @@ def set_api_key(user_api_key):
     st.session_state.user_api_key = user_api_key
 
 # -------------------------------------- Analyze solidity contract --------------------------------------------   
+@st.cache_data
+def analyze_contract(uploaded_file):
+    # Path to save the uploaded file temporarily
+    # temp_file_path = os.path.join("slitter_output", uploaded_file)
+    temp_file_path = os.path.abspath(uploaded_file)
+    
+    slither = Slither(temp_file_path, solc_version= os.getenv("SOLC_VERSION"))
+    # List to store generated files
+    analysis_reports = {}
+    
+    # Run Slither subprocess commands and parse the output
+    slither_output1 = subprocess.run(f'slither {temp_file_path} --print cfg --json -', shell=True, capture_output=True, text=True)
+    
+    slither_output2 = subprocess.run(f'slither {temp_file_path} --print call-graph --json -', shell=True, capture_output=True, text=True)
+     
+#     slither_output3 = subprocess.run(f'slither {temp_file_path} --print human-summary --json -', shell=True, capture_output=True, text=True)
+    
+    slither_output4 = subprocess.run(f'slither {temp_file_path} --print inheritance-graph --json -', shell=True, capture_output=True, text=True)
 
-def analyze_contract(contract_file_path):
-       slither = Slither(contract_file_path, solc_version= os.getenv("SOLC_VERSION"))
-       slither_output_dir = 'slither-report/'
-       os.makedirs(slither_output_dir, exist_ok=True)
-#        slither_output_file = os.path.join(slither_output_dir, 'contract.dot')
-       # Get the contract's control flow graph (CFG) as a DOT format string
-
-	   # # cfg_dot = slither.cfg()
-       subprocess.run(f'slither {contract_file_path} --print cfg', shell = True)
-       subprocess.run(f'slither {contract_file_path} --print call-graph', shell = True)
-       subprocess.run(f'slither {contract_file_path} --print human-sumary', shell = True)
-       subprocess.run(f'slither {contract_file_path} --print inheritance', shell = True)
-       subprocess.run(f'slither {contract_file_path} --print inheritance-graph', shell = True)
-#        subprocess.run(f'slither {contract_file_path} --print contract > contract.ast', shell = True)
-    #    subprocess.run(f'dot -Tpng Voting.sol.Voting.call-graph.dot -o contract.png', shell = True)
-       
-	   # Save the DOT format string to a file (optional)
-    #    with open('contract_cfg.dot', 'w') as dot_file:
-    #           dot_file.write(cfg_dot)
+    # slither_output5 = subprocess.run(f'solc {temp_file_path} --ast-compact-json', shell=True, capture_output=True, text=True)
 
 
-# Example usage
-# solidity_file_path = 'path/to/your/solidity_contract.sol'
-# output_file_path = 'contract_visualization.png'
-# generate_contract_visualization(solidity_file_path, output_file_path)
+    analysis_reports["cfg"] = slither_output1.stdout
+    analysis_reports["call-graph"] = slither_output2.stdout
+#     analysis_reports["human-summary"] = slither_output3.stdout
+    analysis_reports["inheritance-graph"] = slither_output4.stdout
+    # generated_files["json-ast"] = slither_output5.stdout
+
+    return analysis_reports
+
 #--------------------------------------------- Tab section ---------------------------------------------------------------
 
 
@@ -210,8 +201,39 @@ def ui_api_key():
                        # Check if API key is set in session state
                        st.session_state.user_api_key = None
             
-# -----------------------------------------------Tab section end -----------------------------------------------------------------
+# -----------------------------------------------python AST section -----------------------------------------------------------------
 
+# Create a Graphviz Digraph object
+dot = Digraph()
+
+# Define a function to get additional details for the node (customize this as needed)
+def get_node_details(node):
+    if isinstance(node, ast.FunctionDef):
+        args = ", ".join(arg.arg for arg in node.args.args)
+        return f"Name: {node.name}\nArguments: {args}"
+    elif isinstance(node, ast.Assign):
+        targets = ", ".join(target.id for target in node.targets)
+        return f"Assign Targets: {targets}"
+    elif isinstance(node, ast.If):
+        return "If Statement"
+    elif isinstance(node, ast.For):
+        return f"For Loop: {node.target.id}"
+    elif isinstance(node, ast.While):
+        return "While Loop"
+    elif isinstance(node, ast.Call):
+        return f"Function Call: {node.func.id}"
+    # Add more conditions and details for other node types as needed
+    return ""
+# Define a function to recursively add nodes to the Digraph
+def add_node(node, parent=None):
+    node_name = str(node.__class__.__name__)
+    node_details = get_node_details(node)  # Get additional details for the node
+    full_node_label = f"{node_name}\n{node_details}"
+    dot.node(str(id(node)), full_node_label)
+    if parent:
+        dot.edge(str(id(parent)), str(id(node)))
+    for child in ast.iter_child_nodes(node):
+        add_node(child, node)
 
 # --------------- LAYOUT ----------------
 # menu = ["About", "Login", "SignUp"]
@@ -259,7 +281,7 @@ if choice == "SignUp":
                         st.error(e)
 
 # abspath = 
-
+py_analyzed = {}
 # here is to show restricted content to authentic users
 if st.session_state["authentication_status"]:
 	# Text /  Title
@@ -279,7 +301,7 @@ if st.session_state["authentication_status"]:
 
 	uploaded_file = st.file_uploader("Upload a Solidity or Python file", type=["sol", "py"])
 
-	# Error handling
+	# Upload & Error handling
 	if uploaded_file is not None:
               st.success("File Upload Successful")
 
@@ -288,43 +310,61 @@ if st.session_state["authentication_status"]:
               button1 = st.button("Analyze and Visualize" )
               button2 = st.button("Interprete")
 
-              if button1:
+              # Initialize session state
+              if "analyze_state" not in st.session_state:
+                        st.session_state.analyze_state = False
+              if "interpret_state" not in st.session_state:
+                        st.session_state.interpret_state = False
+
+              if button1 or st.session_state.analyze_state:
+                      st.session_state.analyze_state = True
                       with st.spinner(text="In progress..."):
                              if uploaded_file.name.endswith(".py"):
-                                    ast_dict = generate_ast_python(os.path.abspath(uploaded_file.name))
-                                    ast_dict = ast_to_dict(ast_dict)
-                                    print_ast(ast_dict)
-                                #     st.write(ast_dict)
-                                    gen_dot_file(ast_dict, os.path.abspath("py-tree-graph.dot"))
+                                    ast_dict = generate_ast_python(content)
+                                    py_analyzed.update({"AST": ast_dict[0], "AST-Graph":ast_dict[1] }) 
+                                    add_node(py_analyzed["AST-Graph"])
+                                    # Render the Digraph as a PNG file
+                                    dot.format = 'png'
                              else:
-                                analyze_contract(os.path.abspath(uploaded_file.name))
-                                ast_dict = gen_ast_solidity(uploaded_file.name)
-                                gen_dot_file(ast_dict, os.path.abspath("ast-tree-graph.dot"))
+                                analyzed_files = analyze_contract(os.path.abspath(uploaded_file.name))
+                                # analyze_contract(os.path.abspath(uploaded_file.name))
+                                ast_dict = gen_ast_solidity(uploaded_file.name) # from here
+                                ast_graph = gen_dot_file(ast_dict)
+                                # ast_str = json.dumps(ast_dict)
+                                analyzed_files.update({"AST": ast_dict, "AST-Graph":ast_graph})
+                                # gen_dot_file(ast_dict, os.path.abspath("ast-tree-graph.dot")) # to here
                         #      st.write(ast_dict)
                 #       dot = gen_dot_file(ast_dict)
                 #       g = ' \'\'\' ' + dot + ' \'\'\''
                 #       st.code(dot)
                         #      st.graphviz_chart(rf'''{dot}''', use_container_width=True)
-              if uploaded_file.name.endswith(".py"):
-                     all_files = ["py-tree-graph.dot", "py_ast.json"]
-              else:
-                all_files = glob.glob(os.path.abspath("*.dot")) + glob.glob(os.path.abspath("*.json"))
-                
-              selected_dot_file = st.selectbox("Select a .dot file", all_files, placeholder="Select a .dot file loaded",)
-              with open(selected_dot_file, "r") as dot_file:
-                                dot_content = dot_file.read()
-                                if selected_dot_file.endswith(".dot"):
-                                        st.graphviz_chart(dot_content)
-                                elif selected_dot_file.endswith(".json"):
-                                        ast_dict = gen_ast_solidity(uploaded_file.name) 
-                                        st.write(ast_dict)
+                      if uploaded_file.name.endswith(".py"):
+                                all_files = py_analyzed.keys()
+                      else:
+                                all_files = analyzed_files.keys()
+                                
+                      option = st.selectbox("Select a Task", all_files, placeholder="Select a .dot file loaded")
+                      if option == "cfg" or option == "call-graph" or option == "inheritance-graph" :
+                                data = json.loads(analyzed_files[option])
+                                st.graphviz_chart(data["results"]["printers"][0]["elements"][0]["name"]["content"]) # this works
+                      elif option == "AST" and uploaded_file.type == 'text/x-python': st.code(py_analyzed[option])
+                      elif option == "AST-Graph" and uploaded_file.type == 'text/x-python': st.graphviz_chart(dot)
+                      elif option == "AST": st.write(analyzed_files[option])
+                      else : st.graphviz_chart(analyzed_files[option])
                                              
-              if button2:
-                      with open(uploaded_file.name, 'r', encoding = 'utf-8') as f:
-                              content2 = f.read()
-                              interpretation = interpret_code_with_llm(content2)
+              if button2 or st.session_state.interpret_state:
+                #       with open(uploaded_file.name, 'r', encoding = 'utf-8') as f:
+                #               content2 = f.read()
+                      try:
+                        interpretation = interpret_code_with_llm(content)
+                        st.write('### Check the AI description of your code')
+                        st.write(interpretation)
 
-                      st.write(interpretation)
+                      except Exception as e:
+                        st.error("Please enter your API key")
+                                     
+
+                      
 
 
 

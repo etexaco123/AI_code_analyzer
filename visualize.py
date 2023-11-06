@@ -4,6 +4,7 @@ import pprint
 import streamlit as st
 from solidity_parser import parser
 import ast
+from graphviz import Digraph
 def gen_ast_solidity(feed):
     ''' This block of code generates an AST file from the solidity file, saves it as a JSON in the directory and returns the AST as a dict'''
     ast_dict = dict(parser.parse_file(feed, loc = False))
@@ -45,7 +46,7 @@ def get_edges(treedict, parent=None):
 # st.graphviz_chart(gen_dot_file(ast_dict), use_container_width=True)
 
 # save the the solidity AST and the python AST to a dot file
-def gen_dot_file(ast_dict, output_file_path):
+def gen_dot_file(ast_dict):
     '''This block converts the python AST or the solidity AST to a dot file so it can be visualized by graphviz '''
     # Get edges from the AST dictionary
     edges = get_edges(ast_dict)
@@ -55,26 +56,35 @@ def gen_dot_file(ast_dict, output_file_path):
     for edge in edges:
         dot_format += f'  "{edge[0]}" -> "{edge[1]}" \n'
     dot_format += "}"
+    
+    return dot_format
 
     # Save dot_format to a DOT file
-    try:
-        with open(output_file_path, "w") as dot_file:
-            dot_file.write(dot_format)
-        return f"DOT file saved successfully at: {output_file_path}"
-    except Exception as e:
-        return f"Error saving DOT file: {e}"
+    # try:
+    #     with open(output_file_path, "w") as dot_file:
+    #         dot_file.write(dot_format)
+    #     return f"DOT file saved successfully at: {output_file_path}"
+    # except Exception as e:
+    #     return f"Error saving DOT file: {e}"
 
 #**************************************************************
 #-------------Analyze python file ---------------------
 #**************************************************************
 def generate_ast_python(feed):
     '''This block generate the python AST using the AST python module '''
-    with open(str(feed), 'r') as file:
-        contents = file.read()
-    ast_dict = ast.parse(contents)
-    # with open("py_ast.json", mode="w") as file:
-    #      ast.dump(ast_dict, indent=4)
-    return ast_dict
+    try:
+        ast_dict = ast.parse(feed)
+        ast_dump = ast.dump(ast_dict, indent=4)
+        # with open(feed, 'r') as file:
+        #     contents = file.read()
+        #     ast_dict = ast.parse(contents)
+        #     ast_dump = ast.dump(ast_dict, indent=4)
+
+        return ast_dump , ast_dict
+    except SyntaxError as e:
+        print("There is a Syntax error in the file")
+        return None
+
 
 def ast_to_dict(node):
     ''' this block converts the python AST returned from the generate_ast_python function'''
