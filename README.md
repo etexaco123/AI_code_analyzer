@@ -18,6 +18,7 @@ This project allows you to upload a solidity file or a python file and allows yo
 - Also go to [billing](https://platform.openai.com/account/billing/overview) to add some funds as little as 5 euros to have access to OPEN AI language models, This model is based on **text-davinci-003**. Please ignore this if you already have some funds in your OPEN API account
 - After the previous steps, On the **HOME** screen of the application, click on **SignUp** to create a mockup username and password to have access to your own environment.
 - Then Click the **Login** button
+- To see the AI code interpretation using LLM enter the API key from OPEN AI in the tab and click the toggle button, then wait to see the key activated. **Note** other app functionalities work without the the use of API key except for the code interpretation.
 
   
   
