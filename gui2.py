@@ -52,6 +52,9 @@ footer{
 .stDeployButton span{
         visibility: hidden;
 }
+.viewerBadge_container__r5tak styles_viewerBadge__CvC9N{
+	visibility: hidden;
+}
 </style>
 """
 #hide default main menu items
