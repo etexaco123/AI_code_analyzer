@@ -28,7 +28,7 @@ This project allows you to upload a solidity file or a python file and allows yo
 ![Alt](https://github.com/etexaco123/AI_code_analyzer/blob/main/code_analyzer.png?raw=true)
 ## Demo
 
-The application is already deployed as a web app to the cloud as a minimum viable product and ready to use. Click on this link [here](https://aicodeanalyzer.streamlit.app/) to test the app in production.You can try out the app with my demo API key **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** since its a private repo. I can change it later.
+The application is already deployed as a web app to the cloud as a minimum viable product and ready to use. Click on this link [here](https://aicodeanalyzer.streamlit.app/) to test the app in production.You can try out the app with my demo API key **Please use an API key to access restricted LLM results** .
 
 
 ## API Reference
