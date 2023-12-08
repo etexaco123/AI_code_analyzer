@@ -59,7 +59,6 @@ footer{
 """
 #hide default main menu items
 st.markdown(hide_menu, unsafe_allow_html = True)
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
 # Load YAML file for authenticating users
