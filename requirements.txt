@@ -1,6 +1,6 @@
 setuptools==58.0.4 
 slither-analyzer==0.9.6
-solc-select==1.0.4
+solc-select==0.8.0
 solidity-parser==0.1.1
 streamlit==1.27.2
 streamlit-authenticator==0.2.3
@@ -18,4 +18,5 @@ python-dotenv==1.0.0
 PyYAML==6.0.1
 requests==2.31.0
 urllib3==2.0.6
+
 
