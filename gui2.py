@@ -34,10 +34,10 @@ load_dotenv()
 # initialize openAPI access
 # openai.api_key = os.getenv('OPEN_API_KEY')
 openai.api_key = os.getenv('USER_OPEN_API_KEY')
-# subprocess.run('solc-select install 0.8.0 ', shell=True)
+subprocess.run('solc-select install 0.8.0 ', shell=True)
 solcx.install_solc('0.8.0')
 # Set the desired Solidity compiler version
-# solcx.set_solc_version('v0.8.0')
+solcx.set_solc_version('v0.8.0')
 
 # # Set the SOLC_VERSION environment variable
 hide_menu = """
@@ -380,6 +380,7 @@ if st.session_state["authentication_status"]:
 
 
     
+
 
 
 
