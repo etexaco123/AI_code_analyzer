@@ -1,5 +1,6 @@
 __version__ = "0.1.0.0"
 app_name = "Code Analyzer"
+subprocess.run(f'pip install requirements.txt', shell=True)
 
 # IMPORTS
 import streamlit as st
@@ -381,6 +382,7 @@ if st.session_state["authentication_status"]:
 
 
     
+
 
 
 
