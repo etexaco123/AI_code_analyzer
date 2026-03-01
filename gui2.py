@@ -29,7 +29,6 @@ import sys
 import pprint
 from solidity_parser import parser
 from visualize import gen_ast_solidity , get_edges , gen_dot_file, generate_ast_python, ast_to_dict
-subprocess.run('pip install requirements.txt', shell=True)
 load_dotenv()
 
 # initialize openAPI access
@@ -381,6 +380,7 @@ if st.session_state["authentication_status"]:
 
 
     
+
 
 
 
